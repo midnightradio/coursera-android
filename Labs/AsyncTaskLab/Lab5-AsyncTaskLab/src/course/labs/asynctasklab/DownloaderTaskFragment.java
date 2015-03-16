@@ -11,6 +11,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 
 public class DownloaderTaskFragment extends Fragment {
 
@@ -28,17 +29,18 @@ public class DownloaderTaskFragment extends Fragment {
 		setRetainInstance(true);
 		
 		// TODO: Create new DownloaderTask that "downloads" data
-
+		DownloaderTask downloaderTask = new DownloaderTask();
         
 		
 		// TODO: Retrieve arguments from DownloaderTaskFragment
-		// Prepare them for use with DownloaderTask. 
-
-        
-        
-        
+		// Prepare them for use with DownloaderTask. 		
+        Integer[] feedIds = new Integer[MainActivity.sRawTextFeedIds.size()];
+        feedIds = MainActivity.sRawTextFeedIds.toArray(feedIds);
+        for (Integer f:feedIds) {
+        	Log.d(TAG, "feedId: "+ Integer.toHexString(f));
+        }
 		// TODO: Start the DownloaderTask 
-		
+		downloaderTask.execute(feedIds);
         
 
 	}
@@ -55,6 +57,7 @@ public class DownloaderTaskFragment extends Fragment {
 		// the correct callback interface.
 		try {
 			mCallback = (DownloadFinishedListener) activity;
+			Log.d(TAG, "what to do with callback?");
 		} catch (ClassCastException e) {
 			throw new ClassCastException(activity.toString()
 					+ " must implement DownloadFinishedListener");
@@ -73,20 +76,10 @@ public class DownloaderTaskFragment extends Fragment {
 	// out). Ultimately, it must also pass newly available data back to 
 	// the hosting Activity using the DownloadFinishedListener interface.
 
-//	public class DownloaderTask extends ... {
-	
-
-    
-    
-    
-    
-    
-    
-    
+	public class DownloaderTask extends AsyncTask<Integer, Integer, String[]> {
         // TODO: Uncomment this helper method
 		// Simulates downloading Twitter data from the network
 
-        /*
          private String[] downloadTweets(Integer resourceIDS[]) {
 			final int simulatedDelay = 2000;
 			String[] feeds = new String[resourceIDS.length];
@@ -113,6 +106,7 @@ public class DownloaderTaskFragment extends Fragment {
 					}
 
 					feeds[idx] = buf.toString();
+					Log.d(TAG, "length feeds[idx]: "+ feeds[idx].length());
 
 					if (null != in) {
 						in.close();
@@ -124,14 +118,15 @@ public class DownloaderTaskFragment extends Fragment {
 
 			return feeds;
 		}
-         */
 
-
-    
-    
-    
-    
-    
-    
-
+		@Override
+		protected String[] doInBackground(Integer... resourceIDs) {
+			return downloadTweets(resourceIDs);
+		}
+		
+		@Override
+		protected void onPostExecute(String[] feeds) {
+			mCallback.notifyDataRefreshed(feeds);
+		}
+	}
 }
